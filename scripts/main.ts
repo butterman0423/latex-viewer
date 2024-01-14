@@ -3,6 +3,7 @@ import { Plugin, MarkdownView} from 'obsidian';
 
 export default class LatexViewerPlugin extends Plugin {
     clickRegistered: boolean
+    mdContent: HTMLElement | null
 
     async onload() {
         this.clickRegistered = false
@@ -17,7 +18,7 @@ export default class LatexViewerPlugin extends Plugin {
         // Commands in separate file (if any)
 
         // Listen to user edits
-        this.registerEvent( workspace.on('editor-change', this.onEditorChange) );
+        this.registerEvent( workspace.on('editor-change', this.updateView) );
 
         // File to register click listener
         this.registerEvent( workspace.on('file-open', (file: TFile | null) => {
@@ -40,12 +41,6 @@ export default class LatexViewerPlugin extends Plugin {
         
     }
 
-    onEditorChange(editor: Editor, info: MarkdownView) {
-        //console.log(info.getViewData())
-        //console.log(editor.getCursor())
-        console.log('Changed!');
-    }
-
     registerClickEvent(workEl: HTMLElement) {
         const clickEl: HTMLElement | null = workEl.querySelector<HTMLElement>('div.cm-content')
 
@@ -54,6 +49,29 @@ export default class LatexViewerPlugin extends Plugin {
             return
         }
 
-        this.registerDomEvent( clickEl as HTMLElement, 'click', (ev: MouseEvent) => {} )
+        this.mdContent = clickEl
+        this.registerDomEvent( this.mdContent as HTMLElement, 'click', this.updateView )
+    }
+
+    async updateView() {
+        if(this.mdContent == null) { return }
+
+        const activeEl = this.mdContent.querySelector<HTMLElement>('div.cm-active');
+        if(activeEl == null) { return }
+
+        const latexBlock: NodeList = activeEl.querySelectorAll('span.cm-math');
+        
+        if( latexBlock.length == 1 ) {
+            // This is a $$ on the screen, where the cursor 
+            // is at the end, setting maybe???
+        }
+
+        // Otherwise the length will always be 3
+
+        // TODO: Run a settings check using latexBlock
+
+        // Actual latex code in idx 1
+        const latexCmds: Node = latexBlock.item(1) as Node;
+        console.log(latexCmds.textContent);
     }
 }
