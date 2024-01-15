@@ -26,7 +26,11 @@ class SettingTab extends PluginSettingTab {
     }
 }
 
-export type PluginSettings = PlugSettings
+export type PluginSettings = PlugSettings;
 export const loadSettings = async (plugin: LatexViewerPlugin) => {
 
+}
+export const matchSettings = (sets: PlugSettings, query: NodeList): boolean => {
+    // TODO: Run a settings check on query
+    return true;
 }

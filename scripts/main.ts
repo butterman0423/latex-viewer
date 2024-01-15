@@ -1,11 +1,17 @@
-import type { Editor, TFile } from 'obsidian'
-import { Plugin, MarkdownView} from 'obsidian';
+import type { TFile } from 'obsidian'
+import type { PluginSettings } from './settings';
+import { Plugin } from 'obsidian';
+import { loadSettings, matchSettings } from './settings';
 
 export default class LatexViewerPlugin extends Plugin {
+    settings: PluginSettings
+
     clickRegistered: boolean
     mdContent: HTMLElement | null
 
     async onload() {
+        await loadSettings(this);
+
         this.clickRegistered = false
 
         const workspace = this.app.workspace;
@@ -45,7 +51,7 @@ export default class LatexViewerPlugin extends Plugin {
         const clickEl: HTMLElement | null = workEl.querySelector<HTMLElement>('div.cm-content')
 
         if( clickEl == null ) {
-            // Something has gone horribly wrong, abort
+            // Something has gone wrong, abort
             return
         }
 
@@ -56,22 +62,27 @@ export default class LatexViewerPlugin extends Plugin {
     async updateView() {
         if(this.mdContent == null) { return }
 
-        const activeEl = this.mdContent.querySelector<HTMLElement>('div.cm-active');
-        if(activeEl == null) { return }
+        const latexBlock: NodeList = this.mdContent.querySelectorAll('span.cm-math');
+        let code: string = "";
 
-        const latexBlock: NodeList = activeEl.querySelectorAll('span.cm-math');
+        if( matchSettings(this.settings, latexBlock) ) {
+
+            // Actual latex code in latexBlock[1:-2]
+            const lastIdx: number = latexBlock.length - 1;
+
+            for(let i = 1; i < lastIdx; i++) {
+                code += (latexBlock[1] as Node).textContent;
+            }
+
+            const lastElem: Element = latexBlock[lastIdx] as Element;
+            if( !lastElem.hasClass('cm-formatting-math-end') ) {
+                code += lastElem.textContent;
+            }
+
+            return;
+        } 
         
-        if( latexBlock.length == 1 ) {
-            // This is a $$ on the screen, where the cursor 
-            // is at the end, setting maybe???
-        }
+        // TODO: Update view
 
-        // Otherwise the length will always be 3
-
-        // TODO: Run a settings check using latexBlock
-
-        // Actual latex code in idx 1
-        const latexCmds: Node = latexBlock.item(1) as Node;
-        console.log(latexCmds.textContent);
     }
 }
