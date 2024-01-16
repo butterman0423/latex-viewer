@@ -1,7 +1,9 @@
 import type { TFile } from 'obsidian'
 import type { PluginSettings } from './settings';
-import { Plugin } from 'obsidian';
+
+import { MarkdownRenderer, Plugin } from 'obsidian';
 import { loadSettings, matchSettings } from './settings';
+import { LatexView, VIEW_TYPE } from './ext-view';
 
 export default class LatexViewerPlugin extends Plugin {
     settings: PluginSettings
@@ -9,12 +11,19 @@ export default class LatexViewerPlugin extends Plugin {
     clickRegistered: boolean
     mdContent: HTMLElement | null
 
+    latexSpace: HTMLElement
+
     async onload() {
         await loadSettings(this);
-
         this.clickRegistered = false
 
         const workspace = this.app.workspace;
+
+        console.log(workspace.containerEl)
+        this.latexSpace = this.createLatexSpace(workspace.containerEl);
+        console.log(this.latexSpace)
+
+        this.registerView(VIEW_TYPE, (leaf) => new LatexView(leaf));
 
         // Load in ribbon icon
         const ribbonIcon = this.addRibbonIcon('dice', 'Latex Viewer', (evt: MouseEvent) => {
@@ -36,10 +45,10 @@ export default class LatexViewerPlugin extends Plugin {
             if(this.clickRegistered) { return }
             if( (file as TFile).extension != 'md' ) { return }
 
-            console.log('Registering click event')
+            console.log('Registering click event');
 
-            this.clickRegistered = true
-            this.registerClickEvent(workspace.containerEl)
+            this.clickRegistered = true;
+            this.registerClickEvent(workspace.containerEl);
         }) );
     }
 
@@ -83,6 +92,16 @@ export default class LatexViewerPlugin extends Plugin {
         } 
         
         // TODO: Update view
+
+    }
+
+    createLatexSpace(el: HTMLElement): HTMLElement {
+        return el.createEl('div', 
+            { attr: {hidden: true} }
+        );
+    }
+
+    render(code: string) {
 
     }
 }
