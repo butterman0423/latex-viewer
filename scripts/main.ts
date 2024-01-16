@@ -19,9 +19,7 @@ export default class LatexViewerPlugin extends Plugin {
 
         const workspace = this.app.workspace;
 
-        console.log(workspace.containerEl)
         this.latexSpace = this.createLatexSpace(workspace.containerEl);
-        console.log(this.latexSpace)
 
         this.registerView(VIEW_TYPE, (leaf) => new LatexView(leaf));
 
