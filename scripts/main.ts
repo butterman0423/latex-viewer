@@ -15,20 +15,15 @@ export default class LatexViewerPlugin extends Plugin {
 
     async onload() {
         await loadSettings(this);
-        this.clickRegistered = false
-
         const workspace = this.app.workspace;
 
+        this.clickRegistered = false
         this.latexSpace = this.createLatexSpace(workspace.containerEl);
 
-        this.registerView(VIEW_TYPE, (leaf) => new LatexView(leaf));
-
-        // Load in ribbon icon
-        const ribbonIcon = this.addRibbonIcon('dice', 'Latex Viewer', (evt: MouseEvent) => {
-            // Open up the view
-        });
-
         // Commands in separate file (if any)
+
+        // Registering view
+        this.registerView(VIEW_TYPE, (leaf) => new LatexView(leaf));
 
         // Listen to user edits
         this.registerEvent( workspace.on('editor-change', this.updateView) );
@@ -48,10 +43,14 @@ export default class LatexViewerPlugin extends Plugin {
             this.clickRegistered = true;
             this.registerClickEvent(workspace.containerEl);
         }) );
+
+        // Show leaf
+        const leaf = workspace.getRightLeaf(false);
+        await leaf.setViewState({ type: VIEW_TYPE, active: true });
     }
 
     async onunload() {
-        
+        // TODO: Figure out how to unregister a view
     }
 
     registerClickEvent(workEl: HTMLElement) {
@@ -67,6 +66,7 @@ export default class LatexViewerPlugin extends Plugin {
     }
 
     async updateView() {
+        // TODO: There seems to be a bug where null is not being caught
         if(this.mdContent == null) { return }
 
         const latexBlock: NodeList = this.mdContent.querySelectorAll('span.cm-math');
@@ -88,18 +88,18 @@ export default class LatexViewerPlugin extends Plugin {
 
             return;
         } 
-        
-        // TODO: Update view
 
+        // Render the latex code
+        MarkdownRenderer.render(this.app, `$$${code}$$`, this.latexSpace, '', this);
+
+        // TODO: Send to components
+        const leaf = await LatexView.getViewLeaf(this.app.workspace);
+        
     }
 
     createLatexSpace(el: HTMLElement): HTMLElement {
         return el.createEl('div', 
             { attr: {hidden: true} }
         );
-    }
-
-    render(code: string) {
-
     }
 }
