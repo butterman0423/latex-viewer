@@ -10,7 +10,7 @@ export default class LatexViewerPlugin extends Plugin {
 
     async onload() {
         await loadSettings(this);
-        const workspace = this.app.workspace;
+        const { workspace } = this.app;
 
         // Commands in separate file (if any)
 
@@ -22,59 +22,48 @@ export default class LatexViewerPlugin extends Plugin {
             const leaf = workspace.getRightLeaf(false);
             await leaf.setViewState({ type: VIEW_TYPE, active: true });
 
-            const mdContent = workspace.containerEl.querySelector<HTMLElement>('div.cm-content');
-            const latexSpace = this.createLatexSpace(workspace.containerEl);
+            let mdContent: HTMLElement | null | undefined = null;
 
             // Listen to user edits
             this.registerEvent( workspace.on('editor-change', async (editor, _info) => {
+                if(mdContent == null || mdContent == undefined) { return }
                 if(editor != undefined && editor.hasFocus()) {
-                    
+                    const latexSpace = this.createLatexSpace(workspace.containerEl);
+                    this.updateView(mdContent, latexSpace);
                 }
             }) );
 
             // Listen to click events
             this.registerDomEvent( workspace.containerEl, 'click', async () => {
-                const { activeEditor } = workspace;
+                const { containerEl, activeEditor } = workspace;
+                const viewEl = containerEl.querySelector<HTMLElement>('div.cm-editor.cm-focused');
+
+                mdContent = viewEl?.querySelector<HTMLElement>('div.cm-contentContainer');
                 workspace.trigger('editor-change', activeEditor?.editor, activeEditor);
             })
-        });
 
-        
+            // "Initialization"
+            workspace.containerEl.trigger('click');
+        });
     }
 
     async onunload() {
         LatexView.destroyAll(this.app.workspace);
     }
 
-    async updateView() {
-        if(this.mdContent == null) { return }
+    async updateView(searchEl: HTMLElement, modEl: HTMLElement) {
+        const latexBlock: NodeList = searchEl.querySelectorAll('span.cm-math:not(.cm-formatting-math)');
+        let code = 'a + b = c';
 
-        const latexBlock: NodeList = this.mdContent.querySelectorAll('span.cm-math:not(.cm-formatting-math)');
-        let code: string = "";
+        // cm-formatting-math-begin -end
 
-        if( latexBlock.length > 0 && matchSettings(this.settings, latexBlock) ) {
+        MarkdownRenderer.render(this.app, `$$${code}$$`, modEl, '', this);
 
-            // Actual latex code in latexBlock[1:-2]
-            const lastIdx: number = latexBlock.length - 1;
+        console.log(modEl);
+    }
 
-            for(let i = 1; i < lastIdx; i++) {
-                code += (latexBlock[i] as Node).textContent;
-            }
+    reset() {
 
-            const lastElem: Element = latexBlock[lastIdx] as Element;
-            if( !lastElem.hasClass('cm-formatting-math-end') ) {
-                code += lastElem.textContent;
-            }
-
-            return;
-        } 
-
-        // Render the latex code
-        MarkdownRenderer.render(this.app, `$$${code}$$`, this.latexSpace, '', this);
-
-        // TODO: Send to components
-        const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE);
-        
     }
 
     createLatexSpace(el: HTMLElement): HTMLElement {
