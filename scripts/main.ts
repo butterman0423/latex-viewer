@@ -8,9 +8,6 @@ import { LatexView, VIEW_TYPE } from './ext-view';
 export default class LatexViewerPlugin extends Plugin {
     settings: PluginSettings
 
-    mdContent: HTMLElement | null
-    latexSpace: HTMLElement
-
     async onload() {
         await loadSettings(this);
         const workspace = this.app.workspace;
@@ -25,8 +22,8 @@ export default class LatexViewerPlugin extends Plugin {
             const leaf = workspace.getRightLeaf(false);
             await leaf.setViewState({ type: VIEW_TYPE, active: true });
 
-            this.mdContent = workspace.containerEl.querySelector<HTMLElement>('div.cm-content');
-            this.latexSpace = this.createLatexSpace(workspace.containerEl);
+            const mdContent = workspace.containerEl.querySelector<HTMLElement>('div.cm-content');
+            const latexSpace = this.createLatexSpace(workspace.containerEl);
 
             // Listen to user edits
             this.registerEvent( workspace.on('editor-change', async (editor, _info) => {
