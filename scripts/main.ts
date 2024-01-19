@@ -22,28 +22,27 @@ export default class LatexViewerPlugin extends Plugin {
 
         // Commands in separate file (if any)
 
+        // Registering view
+        this.registerView(VIEW_TYPE, (leaf) => new LatexView(leaf));
+
+        // Listen to user edits
+        //this.registerEvent( workspace.on('editor-change', this.updateView) );
+
+        // File to register click listener
+        this.registerEvent( workspace.on('file-open', (file: TFile | null) => {
+            if(file == null) { 
+                this.clickRegistered = false;
+                return;
+            }
+
+            if(this.clickRegistered) { return }
+            if( (file as TFile).extension != 'md' ) { return }
+
+            this.clickRegistered = true;
+            this.registerClickEvent(workspace.containerEl);
+        }) );
+
         workspace.onLayoutReady(async () => {
-
-            // Registering view
-            this.registerView(VIEW_TYPE, (leaf) => new LatexView(leaf));
-
-            // Listen to user edits
-            //this.registerEvent( workspace.on('editor-change', this.updateView) );
-
-            // File to register click listener
-            this.registerEvent( workspace.on('file-open', (file: TFile | null) => {
-                if(file == null) { 
-                    this.clickRegistered = false;
-                    return;
-                }
-
-                if(this.clickRegistered) { return }
-                if( (file as TFile).extension != 'md' ) { return }
-
-                this.clickRegistered = true;
-                this.registerClickEvent(workspace.containerEl);
-            }) );
-
             // Show leaf
             const leaf = workspace.getRightLeaf(false);
             await leaf.setViewState({ type: VIEW_TYPE, active: true });
