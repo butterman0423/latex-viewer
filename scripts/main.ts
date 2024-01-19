@@ -17,43 +17,40 @@ export default class LatexViewerPlugin extends Plugin {
         await loadSettings(this);
         const workspace = this.app.workspace;
 
-        this.clickRegistered = false
+        this.clickRegistered = false;
         this.latexSpace = this.createLatexSpace(workspace.containerEl);
 
         // Commands in separate file (if any)
 
         workspace.onLayoutReady(async () => {
 
-        // Registering view
-        this.registerView(VIEW_TYPE, (leaf) => new LatexView(leaf));
+            // Registering view
+            this.registerView(VIEW_TYPE, (leaf) => new LatexView(leaf));
 
-        // Listen to user edits
-        this.registerEvent( workspace.on('editor-change', this.updateView) );
+            // Listen to user edits
+            //this.registerEvent( workspace.on('editor-change', this.updateView) );
 
-        // File to register click listener
-        this.registerEvent( workspace.on('file-open', (file: TFile | null) => {
-            if(file == null) { 
-                this.clickRegistered = false;
-                return;
-            }
+            // File to register click listener
+            this.registerEvent( workspace.on('file-open', (file: TFile | null) => {
+                if(file == null) { 
+                    this.clickRegistered = false;
+                    return;
+                }
 
-            if(this.clickRegistered) { return }
-            if( (file as TFile).extension != 'md' ) { return }
+                if(this.clickRegistered) { return }
+                if( (file as TFile).extension != 'md' ) { return }
 
-            console.log('Registering click event');
+                this.clickRegistered = true;
+                this.registerClickEvent(workspace.containerEl);
+            }) );
 
-            this.clickRegistered = true;
-            this.registerClickEvent(workspace.containerEl);
-        }) );
-
-        // Show leaf
-        const leaf = workspace.getRightLeaf(false);
-        await leaf.setViewState({ type: VIEW_TYPE, active: true });
+            // Show leaf
+            const leaf = workspace.getRightLeaf(false);
+            await leaf.setViewState({ type: VIEW_TYPE, active: true });
         });
     }
 
     async onunload() {
-        // TODO: Figure out how to unregister a view
         LatexView.destroyAll(this.app.workspace);
     }
 
@@ -67,13 +64,16 @@ export default class LatexViewerPlugin extends Plugin {
 
         this.mdContent = clickEl;
         this.registerDomEvent( this.mdContent as HTMLElement, 'click', this.updateView );
+
+        console.log('Registering click event');
     }
 
     async updateView() {
+        console.log('Updating');
         // TODO: There seems to be a bug where null is not being caught
         if(this.mdContent == null || this.mdContent == undefined) { return }
 
-        const latexBlock: NodeList = this.mdContent.querySelectorAll('span.cm-math');
+        const latexBlock: NodeList = this.mdContent.querySelectorAll('span.cm-math:not(.cm-formatting-math)');
         let code: string = "";
 
         if( latexBlock.length > 0 && matchSettings(this.settings, latexBlock) ) {
