@@ -1,20 +1,17 @@
-import { MarkdownView, Workspace, WorkspaceLeaf } from "obsidian";
+import { ItemView, Workspace, WorkspaceLeaf } from "obsidian";
+
+interface LatexSpace {
+    update(rendered: HTMLElement): Promise<void>;
+}
 
 export const VIEW_TYPE: string = "LATEX_VIEW";
 
-export class LatexView extends MarkdownView {
+export class LatexView extends ItemView implements LatexSpace {
     cmds: string
 
-    static async getViewLeaf(workspace: Workspace): Promise<WorkspaceLeaf> {
-        const leaves = workspace.getLeavesOfType(VIEW_TYPE);
-
-        if(leaves.length > 0) {
-            return leaves[0]
-        }
-
-        const leaf = workspace.getRightLeaf(false);
-        await leaf.setViewState({ type: VIEW_TYPE, active: true });
-        return leaf;
+    static async destroyAll(workspace: Workspace) {
+        workspace.getLeavesOfType(VIEW_TYPE)
+            .forEach((leaf: WorkspaceLeaf) => leaf.detach());
     }
 
     constructor(leaf: WorkspaceLeaf) {
@@ -35,10 +32,10 @@ export class LatexView extends MarkdownView {
     }
 
     async onClose() {
-
+        
     }
 
-    async update() {
-
+    async update(rendered: HTMLElement): Promise<void> {
+        
     }
 }
