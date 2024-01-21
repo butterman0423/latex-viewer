@@ -1,6 +1,6 @@
 import type { PluginSettings } from './settings';
 
-import { MarkdownRenderer, Plugin } from 'obsidian';
+import { Plugin, finishRenderMath, renderMath } from 'obsidian';
 import { loadSettings, matchSettings } from './settings';
 import { LatexView, VIEW_TYPE } from './ext-view';
 
@@ -26,11 +26,14 @@ export default class LatexViewerPlugin extends Plugin {
             // Listen to user edits
             this.registerEvent( workspace.on('editor-change', async (editor, _info) => {
                 if(mdContent == null || mdContent == undefined) { return }
-                if(editor != undefined && editor.hasFocus()) {
-                    const latexSpace = this.createLatexSpace(workspace.containerEl);
-                    this.updateView(mdContent, latexSpace);
-                    latexSpace.detach();
-                }
+                if(editor == undefined || !editor.hasFocus()) { return }
+
+                this.updateView(mdContent)
+                    .then((el: HTMLElement) => {
+                        console.log(el);
+                        finishRenderMath()
+                    })
+                    .catch(() => {})
             }) );
 
             // Listen to click events
@@ -53,15 +56,13 @@ export default class LatexViewerPlugin extends Plugin {
         LatexView.destroyAll(this.app.workspace);
     }
 
-    async updateView(searchEl: HTMLElement, modEl: HTMLElement) {
+    async updateView(searchEl: HTMLElement): Promise<HTMLElement> {
         const latexBlock: NodeList = searchEl.querySelectorAll('span.cm-math:not(.cm-formatting-math)');
         let code = 'a + b = c';
 
         // cm-formatting-math-begin -end
 
-        MarkdownRenderer.render(this.app, `$$${code}$$`, modEl, '', this);
-
-        console.log(latexBlock);
+        return renderMath(code, true);
     }
 
     createLatexSpace(el: HTMLElement): HTMLElement {
