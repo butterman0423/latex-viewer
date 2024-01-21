@@ -1,4 +1,3 @@
-import type { MarkdownFileInfo, TFile } from 'obsidian'
 import type { PluginSettings } from './settings';
 
 import { MarkdownRenderer, Plugin } from 'obsidian';
@@ -30,6 +29,7 @@ export default class LatexViewerPlugin extends Plugin {
                 if(editor != undefined && editor.hasFocus()) {
                     const latexSpace = this.createLatexSpace(workspace.containerEl);
                     this.updateView(mdContent, latexSpace);
+                    latexSpace.detach();
                 }
             }) );
 
@@ -39,8 +39,10 @@ export default class LatexViewerPlugin extends Plugin {
                 const viewEl = containerEl.querySelector<HTMLElement>('div.cm-editor.cm-focused');
 
                 mdContent = viewEl?.querySelector<HTMLElement>('div.cm-contentContainer');
+
+                // PROBLEM: Triggers before HTML actually updates
                 workspace.trigger('editor-change', activeEditor?.editor, activeEditor);
-            })
+            });
 
             // "Initialization"
             workspace.containerEl.trigger('click');
@@ -59,11 +61,7 @@ export default class LatexViewerPlugin extends Plugin {
 
         MarkdownRenderer.render(this.app, `$$${code}$$`, modEl, '', this);
 
-        console.log(modEl);
-    }
-
-    reset() {
-
+        console.log(latexBlock);
     }
 
     createLatexSpace(el: HTMLElement): HTMLElement {
