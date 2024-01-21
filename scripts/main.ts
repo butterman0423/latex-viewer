@@ -15,13 +15,16 @@ export default class LatexViewerPlugin extends Plugin {
 
         // Registering view
         this.registerView(VIEW_TYPE, (leaf) => new LatexView(leaf));
-        
+
         workspace.onLayoutReady(async () => {
             // Show leaf
             const leaf = workspace.getRightLeaf(false);
             await leaf.setViewState({ type: VIEW_TYPE, active: true });
 
             let mdContent: HTMLElement | null | undefined = null;
+            const domObserver: MutationObserver = new MutationObserver((records, self) => {
+                console.log(records);
+            });
 
             // Listen to user edits
             this.registerEvent( workspace.on('editor-change', async (editor, _info) => {
@@ -30,7 +33,7 @@ export default class LatexViewerPlugin extends Plugin {
 
                 this.updateView(mdContent)
                     .then((el: HTMLElement) => {
-                        console.log(el);
+                        //console.log(el);
                         finishRenderMath()
                     })
                     .catch(() => {})
