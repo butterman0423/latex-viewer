@@ -1,6 +1,6 @@
 import type { PluginSettings } from './settings';
 
-import { Plugin, finishRenderMath, renderMath } from 'obsidian';
+import { Plugin, MarkdownView, finishRenderMath, renderMath } from 'obsidian';
 import { loadSettings, matchSettings } from './settings';
 import { LatexView, VIEW_TYPE } from './ext-view';
 
@@ -21,11 +21,48 @@ export default class LatexViewerPlugin extends Plugin {
             const leaf = workspace.getRightLeaf(false);
             await leaf.setViewState({ type: VIEW_TYPE, active: true });
 
-            let mdContent: HTMLElement | null | undefined = null;
-            const domObserver: MutationObserver = new MutationObserver((records, self) => {
+            // let mdContent: HTMLElement | null | undefined = null;
+            const viewObserver: MutationObserver = new MutationObserver((records, self) => {
                 console.log(records);
             });
 
+            this.registerEvent( workspace.on('file-open', (file) => {
+                viewObserver.disconnect();
+                if(file == null || file.extension != 'md') { return }
+
+                const { contentEl }= workspace.getActiveViewOfType(MarkdownView) as MarkdownView;
+                const linesEl = contentEl.querySelector<HTMLElement>('div.cm-content');
+
+                
+                if(linesEl == null) {
+                    // Push out a notice about the error
+                    
+                    return;
+                }
+                
+                viewObserver.observe(linesEl, { childList: true, subtree: true })
+            }))
+            /*
+            this.registerEvent( workspace.on('active-leaf-change', (leaf) => {
+                if(leaf == null) { return }
+
+                viewObserver.disconnect();
+                
+                if(leaf.getViewState().type == "markdown") {
+                    const { contentEl } = leaf.view as MarkdownView;
+                    const linesEl = contentEl.querySelector<HTMLElement>('div.cm-content');
+
+                    if(linesEl == null) {
+                        // Push out a notice about the error
+                        return;
+                    }
+
+                    viewObserver.observe(linesEl, { childList: true, subtree: true })
+                }
+            }) );
+            */
+
+            /*
             // Listen to user edits
             this.registerEvent( workspace.on('editor-change', async (editor, _info) => {
                 if(mdContent == null || mdContent == undefined) { return }
@@ -52,6 +89,7 @@ export default class LatexViewerPlugin extends Plugin {
 
             // "Initialization"
             workspace.containerEl.trigger('click');
+            */
         });
     }
 
