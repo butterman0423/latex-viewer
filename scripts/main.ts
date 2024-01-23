@@ -47,8 +47,15 @@ export default class LatexViewerPlugin extends Plugin {
                 viewObserver.disconnect();
 
                 if(file == null || file.extension != 'md') { return }
+                
+                // Band-aid fix for ISSUE
+                const mdview = workspace.getActiveViewOfType(MarkdownView);
+                if(mdview == null) {
+                    // Push out a warning or something
+                    return
+                }
 
-                const { contentEl } = workspace.getActiveViewOfType(MarkdownView) as MarkdownView;
+                const { contentEl } = mdview;
                 const lineEls = contentEl.querySelector<HTMLElement>('div.cm-content');
                 
                 if(lineEls == null) {
