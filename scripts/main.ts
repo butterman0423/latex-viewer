@@ -35,28 +35,20 @@ export default class LatexViewerPlugin extends Plugin {
             console.log(rendered);
         });
 
-        // ISSUE: Triggers when app first load, causes an error to occur
-        // User needs to reopen the file again
-        this.registerEvent( workspace.on('file-open', (file) => {
+        this.registerEvent( workspace.on('active-leaf-change', (leaf) => {
             mdContent = null;
             viewObserver.disconnect();
 
-            if(file == null || file.extension != 'md') { return }
-            
-            // Band-aid fix for ISSUE
-            const mdview = workspace.getActiveViewOfType(MarkdownView);
-            if(mdview == null) {
-                // Push out a warning or something
-                console.error('mdview is null');
-                return
-            }
-            console.log('File Event')
-            const { contentEl } = mdview;
+            if(leaf == null) { return }
+
+            const { view } = leaf;
+            if( leaf.view.getViewType() != 'markdown') { return }
+
+            const { contentEl } = view as MarkdownView;
             const lineEls = contentEl.querySelector<HTMLElement>('div.cm-content');
             
             if(lineEls == null) {
                 // Push out a notice about the error
-                
                 return;
             }
             
@@ -68,8 +60,6 @@ export default class LatexViewerPlugin extends Plugin {
             // Show leaf
             const leaf = workspace.getRightLeaf(false);
             await leaf.setViewState({ type: VIEW_TYPE, active: true });
-
-            workspace.trigger('file-open', workspace.getActiveFile());
         });
     }
 
