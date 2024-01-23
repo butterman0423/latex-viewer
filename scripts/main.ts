@@ -21,27 +21,45 @@ export default class LatexViewerPlugin extends Plugin {
             const leaf = workspace.getRightLeaf(false);
             await leaf.setViewState({ type: VIEW_TYPE, active: true });
 
-            // let mdContent: HTMLElement | null | undefined = null;
-            const viewObserver: MutationObserver = new MutationObserver((records, self) => {
-                console.log(records);
+            let mdContent: HTMLElement | null = null;
+            const viewObserver: MutationObserver = new MutationObserver(async () => {
+                if(mdContent == null) { return }
+
+                const mathEls = mdContent.querySelectorAll('div.cm-active span.cm-math:not(.cm-formatting-math)')
+                let rendered: HTMLElement | null = null
+
+                if(mathEls.length > 0) {
+                    let code = '';
+                    mathEls.forEach((el) => code + el.getText());
+
+                    rendered = renderMath(code, true);
+                    finishRenderMath();
+                }
+
+                // Push update to views
+                console.log(rendered);
             });
 
+            // ISSUE: Triggers when app first load, causes an error to occur
+            // User needs to reopen the file again
             this.registerEvent( workspace.on('file-open', (file) => {
+                mdContent = null;
                 viewObserver.disconnect();
+
                 if(file == null || file.extension != 'md') { return }
 
-                const { contentEl }= workspace.getActiveViewOfType(MarkdownView) as MarkdownView;
-                const linesEl = contentEl.querySelector<HTMLElement>('div.cm-content');
-
+                const { contentEl } = workspace.getActiveViewOfType(MarkdownView) as MarkdownView;
+                const lineEls = contentEl.querySelector<HTMLElement>('div.cm-content');
                 
-                if(linesEl == null) {
+                if(lineEls == null) {
                     // Push out a notice about the error
                     
                     return;
                 }
                 
-                viewObserver.observe(linesEl, { childList: true, subtree: true })
-            }))
+                mdContent = lineEls;
+                viewObserver.observe(lineEls, { childList: true, subtree: true })
+            }) );
 
             /*
             // Listen to user edits
