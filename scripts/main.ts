@@ -42,25 +42,6 @@ export default class LatexViewerPlugin extends Plugin {
                 
                 viewObserver.observe(linesEl, { childList: true, subtree: true })
             }))
-            /*
-            this.registerEvent( workspace.on('active-leaf-change', (leaf) => {
-                if(leaf == null) { return }
-
-                viewObserver.disconnect();
-                
-                if(leaf.getViewState().type == "markdown") {
-                    const { contentEl } = leaf.view as MarkdownView;
-                    const linesEl = contentEl.querySelector<HTMLElement>('div.cm-content');
-
-                    if(linesEl == null) {
-                        // Push out a notice about the error
-                        return;
-                    }
-
-                    viewObserver.observe(linesEl, { childList: true, subtree: true })
-                }
-            }) );
-            */
 
             /*
             // Listen to user edits
