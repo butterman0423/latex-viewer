@@ -60,54 +60,10 @@ export default class LatexViewerPlugin extends Plugin {
                 mdContent = lineEls;
                 viewObserver.observe(lineEls, { childList: true, subtree: true })
             }) );
-
-            /*
-            // Listen to user edits
-            this.registerEvent( workspace.on('editor-change', async (editor, _info) => {
-                if(mdContent == null || mdContent == undefined) { return }
-                if(editor == undefined || !editor.hasFocus()) { return }
-
-                this.updateView(mdContent)
-                    .then((el: HTMLElement) => {
-                        //console.log(el);
-                        finishRenderMath()
-                    })
-                    .catch(() => {})
-            }) );
-
-            // Listen to click events
-            this.registerDomEvent( workspace.containerEl, 'click', async () => {
-                const { containerEl, activeEditor } = workspace;
-                const viewEl = containerEl.querySelector<HTMLElement>('div.cm-editor.cm-focused');
-
-                mdContent = viewEl?.querySelector<HTMLElement>('div.cm-contentContainer');
-
-                // PROBLEM: Triggers before HTML actually updates
-                workspace.trigger('editor-change', activeEditor?.editor, activeEditor);
-            });
-
-            // "Initialization"
-            workspace.containerEl.trigger('click');
-            */
         });
     }
 
     async onunload() {
         LatexView.destroyAll(this.app.workspace);
-    }
-
-    async updateView(searchEl: HTMLElement): Promise<HTMLElement> {
-        const latexBlock: NodeList = searchEl.querySelectorAll('span.cm-math:not(.cm-formatting-math)');
-        let code = 'a + b = c';
-
-        // cm-formatting-math-begin -end
-
-        return renderMath(code, true);
-    }
-
-    createLatexSpace(el: HTMLElement): HTMLElement {
-        return el.createEl('div', 
-            { attr: {hidden: true} }
-        );
     }
 }
