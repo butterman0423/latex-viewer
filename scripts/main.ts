@@ -26,14 +26,17 @@ export default class LatexViewerPlugin extends Plugin {
 
             if(mathEls.length > 0) {
                 let code = '';
-                mathEls.forEach((el) => code + el.getText());
+                mathEls.forEach( (el) => code = code + el.getText() );
 
                 rendered = renderMath(code, true);
                 finishRenderMath();
             }
 
             // Push update to views
-            console.log(rendered);
+            workspace.getLeavesOfType(LatexView.VIEW_TYPE)
+                .forEach((leaf) => {
+                    (leaf.view as LatexView).update(rendered);
+                });
         });
 
         this.registerEvent( workspace.on('active-leaf-change', (leaf) => {
