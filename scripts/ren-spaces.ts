@@ -50,10 +50,6 @@ export class LatexView extends ItemView implements LatexSpace {
         this.clear(true);
     }
 
-    async onClose() {
-        
-    }
-
     private createEmptyNode(): Node {
         return createDiv(undefined, (self) => {
             self.appendChild( createEl('p', {text: "Hello World!"}) );
