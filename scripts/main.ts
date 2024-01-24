@@ -6,6 +6,7 @@ import { LatexView, VIEW_TYPE } from './ext-view';
 
 export default class LatexViewerPlugin extends Plugin {
     settings: PluginSettings
+    viewObserver: MutationObserver
 
     async onload() {
         await loadSettings(this);
@@ -17,7 +18,7 @@ export default class LatexViewerPlugin extends Plugin {
         this.registerView(VIEW_TYPE, (leaf) => new LatexView(leaf));
 
         let mdContent: HTMLElement | null = null;
-        const viewObserver: MutationObserver = new MutationObserver(async () => {
+        this.viewObserver = new MutationObserver(async () => {
             if(mdContent == null) { return }
 
             const mathEls = mdContent.querySelectorAll('div.cm-active span.cm-math:not(.cm-formatting-math)')
@@ -37,7 +38,7 @@ export default class LatexViewerPlugin extends Plugin {
 
         this.registerEvent( workspace.on('active-leaf-change', (leaf) => {
             mdContent = null;
-            viewObserver.disconnect();
+            this.viewObserver.disconnect();
 
             if(leaf == null) { return }
 
@@ -53,7 +54,7 @@ export default class LatexViewerPlugin extends Plugin {
             }
             
             mdContent = lineEls;
-            viewObserver.observe(lineEls, { childList: true, subtree: true })
+            this.viewObserver.observe(lineEls, { childList: true, subtree: true })
         }) );
 
         workspace.onLayoutReady(async () => {
@@ -64,6 +65,7 @@ export default class LatexViewerPlugin extends Plugin {
     }
 
     async onunload() {
+        this.viewObserver.disconnect();
         LatexView.destroyAll(this.app.workspace);
     }
 }
