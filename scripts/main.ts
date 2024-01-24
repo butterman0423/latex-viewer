@@ -2,7 +2,7 @@ import type { PluginSettings } from './settings';
 
 import { Plugin, MarkdownView, finishRenderMath, renderMath } from 'obsidian';
 import { loadSettings, matchSettings } from './settings';
-import { LatexView } from './ext-view';
+import { LatexView } from './ren-spaces';
 
 export default class LatexViewerPlugin extends Plugin {
     settings: PluginSettings
