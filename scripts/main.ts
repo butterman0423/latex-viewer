@@ -2,7 +2,7 @@ import type { PluginSettings } from './settings';
 
 import { Plugin, MarkdownView, finishRenderMath, renderMath } from 'obsidian';
 import { loadSettings, matchSettings } from './settings';
-import { LatexView, VIEW_TYPE } from './ext-view';
+import { LatexView } from './ext-view';
 
 export default class LatexViewerPlugin extends Plugin {
     settings: PluginSettings
@@ -15,7 +15,7 @@ export default class LatexViewerPlugin extends Plugin {
         // Commands in separate file (if any)
 
         // Registering view
-        this.registerView(VIEW_TYPE, (leaf) => new LatexView(leaf));
+        this.registerView( LatexView.VIEW_TYPE, (leaf) => new LatexView(leaf) );
 
         let mdContent: HTMLElement | null = null;
         this.viewObserver = new MutationObserver(async () => {
@@ -60,7 +60,7 @@ export default class LatexViewerPlugin extends Plugin {
         workspace.onLayoutReady(async () => {
             // Show leaf
             const leaf = workspace.getRightLeaf(false);
-            await leaf.setViewState({ type: VIEW_TYPE, active: true });
+            await leaf.setViewState({ type: LatexView.VIEW_TYPE, active: true });
         });
     }
 

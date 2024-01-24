@@ -4,13 +4,12 @@ interface LatexSpace {
     update(rendered: HTMLElement): Promise<void>;
 }
 
-export const VIEW_TYPE: string = "LATEX_VIEW";
-
 export class LatexView extends ItemView implements LatexSpace {
+    static VIEW_TYPE: string = "LATEX_VIEW";
     cmds: string
 
     static async destroyAll(workspace: Workspace) {
-        workspace.getLeavesOfType(VIEW_TYPE)
+        workspace.getLeavesOfType(LatexView.VIEW_TYPE)
             .forEach((leaf: WorkspaceLeaf) => leaf.detach());
     }
 
@@ -20,7 +19,7 @@ export class LatexView extends ItemView implements LatexSpace {
     }
 
     getViewType(): string {
-        return VIEW_TYPE;
+        return LatexView.VIEW_TYPE;
     }
 
     getDisplayText(): string {
