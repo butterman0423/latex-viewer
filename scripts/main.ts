@@ -57,7 +57,7 @@ export default class LatexViewerPlugin extends Plugin {
             }
             
             mdContent = lineEls;
-            this.viewObserver.observe(lineEls, { childList: true, subtree: true })
+            this.viewObserver.observe(lineEls, { childList: true, characterData: true, subtree: true })
         }) );
 
         workspace.onLayoutReady(async () => {

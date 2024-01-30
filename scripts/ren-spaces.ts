@@ -21,8 +21,6 @@ export class LatexView extends ItemView implements LatexSpace {
         super(leaf);
     }
 
-    // Hangs on active update, might not be function fault
-    // could be that mutation observer is not detecting the change
     async update(rendered: HTMLElement | null): Promise<void> {
         this.clear();
 
