@@ -21,7 +21,7 @@ export default class LatexViewerPlugin extends Plugin {
         this.viewObserver = new MutationObserver(async () => {
             if(mdContent == null) { return }
 
-            const mathEls = mdContent.querySelectorAll('div.cm-active span.cm-math:not(.cm-formatting-math)')
+            const mathEls = mdContent.querySelectorAll('span.cm-math:not(.cm-formatting-math)')
             let rendered: HTMLElement | null = null
 
             if(mathEls.length > 0) {
