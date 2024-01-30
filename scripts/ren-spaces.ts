@@ -1,5 +1,9 @@
 import { ItemView, Workspace, WorkspaceLeaf } from "obsidian";
 
+const CONTAINER_CLASS = "latview-container"
+const EMPTY_CLASS = "latview-empty-container";
+const RENDER_CLASS = "latview-render-container";
+
 interface LatexSpace {
     update(rendered: HTMLElement | null): Promise<void>;
     clear(): void;
@@ -7,8 +11,6 @@ interface LatexSpace {
 
 export class LatexView extends ItemView implements LatexSpace {
     static VIEW_TYPE: string = "LATEX_VIEW";
-    latexNode: Node | null;
-    emptyNode: Node;
 
     static async destroyAll(workspace: Workspace) {
         workspace.getLeavesOfType(LatexView.VIEW_TYPE)
@@ -17,11 +19,10 @@ export class LatexView extends ItemView implements LatexSpace {
 
     constructor(leaf: WorkspaceLeaf) {
         super(leaf);
-
-        this.latexNode = null;
-        this.emptyNode = this.createEmptyNode();
     }
 
+    // Hangs on active update, might not be function fault
+    // could be that mutation observer is not detecting the change
     async update(rendered: HTMLElement | null): Promise<void> {
         this.clear();
 
@@ -30,29 +31,34 @@ export class LatexView extends ItemView implements LatexSpace {
             return;
         }
 
-        this.latexNode = rendered.cloneNode(true);
-        this.contentEl.appendChild(this.latexNode);
+        const renBlock = this.contentEl.querySelector(`.${CONTAINER_CLASS}`) as HTMLElement;
+
+        (renBlock.querySelector(`.${EMPTY_CLASS}`) as HTMLElement).setAttr('hidden', true);
+        renBlock.createDiv(
+            {cls: RENDER_CLASS}, 
+            (el) => el.appendChild( rendered.cloneNode(true) )
+        );
     }
 
-    clear(addEmpty?: boolean) {
+    clear() {
         const { contentEl } = this;
-        while(contentEl.lastChild) {
-            contentEl.removeChild(contentEl.lastChild);
-        }
 
-        this.latexNode = null;
-        if(addEmpty) {
-            contentEl.appendChild(this.emptyNode);
-        }
+        contentEl.querySelector(`.${RENDER_CLASS}`)?.remove();
+        contentEl.querySelector(`.${EMPTY_CLASS}`)?.setAttr('hidden', null);
     }
 
     async onOpen() {
-        this.clear(true);
-    }
+        this.clear();
+        const { contentEl } = this;
 
-    private createEmptyNode(): Node {
-        return createDiv(undefined, (self) => {
-            self.appendChild( createEl('p', {text: "Hello World!"}) );
+        // Header block
+        contentEl.createDiv({cls: "inline-title", text: "Latex View"})
+        
+        // Render Content block
+        const renBlock = contentEl.createDiv({cls: CONTAINER_CLASS});
+        renBlock.createDiv({cls: EMPTY_CLASS}, (el) => {
+            el.createDiv({text: "No Active Latex Found"})
+            el.createDiv({text: "Your latex codeblock will render here once it is selected"})
         });
     }
 
