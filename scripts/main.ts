@@ -22,20 +22,14 @@ export default class LatexViewerPlugin extends Plugin {
             if(mdContent == null) { return }
 
             const mathEls = mdContent.querySelectorAll('span.cm-math:not(.cm-formatting-math)')
-            let rendered: HTMLElement | null = null
-
-            if(mathEls.length > 0) {
-                let code = '';
-                mathEls.forEach( (el) => code = code + el.getText() );
-
-                rendered = renderMath(code, true);
-                finishRenderMath();
-            }
+            let code = '';
+            mathEls.forEach( (el) => code = code + el.getText() );
+            code = `$$${code}$$`;
 
             // Push update to views
             workspace.getLeavesOfType(LatexView.VIEW_TYPE)
                 .forEach((leaf) => {
-                    (leaf.view as LatexView).update(rendered);
+                    (leaf.view as LatexView).update(this, code);
                 });
         });
 

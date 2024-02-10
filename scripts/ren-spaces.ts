@@ -1,11 +1,11 @@
-import { ItemView, Workspace, WorkspaceLeaf } from "obsidian";
+import { ItemView, Workspace, WorkspaceLeaf, MarkdownRenderer, Plugin } from "obsidian";
 
 const CONTAINER_CLASS = "latview-container"
 const EMPTY_CLASS = "latview-empty-container";
 const RENDER_CLASS = "latview-render-container";
 
 interface LatexSpace {
-    update(rendered: HTMLElement | null): Promise<void>;
+    update(plugin: Plugin, code: string): Promise<void>;
     clear(): void;
 }
 
@@ -21,11 +21,11 @@ export class LatexView extends ItemView implements LatexSpace {
         super(leaf);
     }
 
-    async update(rendered: HTMLElement | null): Promise<void> {
+    async update(plugin: Plugin, code: string): Promise<void> {
         this.clear();
 
-        if(rendered == null) {
-            console.warn('Rendered Mathjax provided is null');
+        if(code === "") {
+            console.warn('Latex Provided is empty');
             return;
         }
 
@@ -34,7 +34,7 @@ export class LatexView extends ItemView implements LatexSpace {
         (renBlock.querySelector(`.${EMPTY_CLASS}`) as HTMLElement).setAttr('hidden', true);
         renBlock.createDiv(
             {cls: RENDER_CLASS}, 
-            (el) => el.appendChild( rendered.cloneNode(true) )
+            el => MarkdownRenderer.render(plugin.app, code, el, "", plugin)
         );
     }
 
