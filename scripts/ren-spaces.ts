@@ -24,7 +24,7 @@ export class LatexView extends ItemView implements LatexSpace {
     async update(plugin: Plugin, code: string): Promise<void> {
         this.clear();
 
-        if(code === "") {
+        if(code === "$$$$") {
             console.warn('Latex Provided is empty');
             return;
         }
@@ -34,7 +34,7 @@ export class LatexView extends ItemView implements LatexSpace {
         (renBlock.querySelector(`.${EMPTY_CLASS}`) as HTMLElement).setAttr('hidden', true);
         renBlock.createDiv(
             {cls: RENDER_CLASS}, 
-            el => MarkdownRenderer.render(plugin.app, code, el, "", plugin)
+            async el => await MarkdownRenderer.render(plugin.app, code, el, "", plugin)
         );
     }
 
