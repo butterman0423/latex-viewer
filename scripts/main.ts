@@ -1,6 +1,6 @@
 import type { PluginSettings } from './settings';
 
-import { Plugin, MarkdownView, Notice, finishRenderMath, renderMath } from 'obsidian';
+import { Plugin, MarkdownView, Notice } from 'obsidian';
 import { loadSettings, matchSettings } from './settings';
 import { LatexView } from './ren-spaces';
 
@@ -45,16 +45,14 @@ export default class LatexViewerPlugin extends Plugin {
             const { contentEl } = view as MarkdownView;
             const lineEls = contentEl.querySelector<HTMLElement>('div.cm-content');
             
-            if(true || lineEls == null) {
+            if(lineEls == null) {
                 // Push out a notice about the error
                 new Notice("Latex Viewer ran into a problem.", 10000);
                 throw new Error("FATAL ERROR: Issue starting plugin: div.cm-content is not found");
             }
             
-            /*
             mdContent = lineEls;
             this.viewObserver.observe(lineEls, { childList: true, characterData: true, subtree: true })
-            */
         }) );
 
         workspace.onLayoutReady(async () => {
