@@ -61,7 +61,14 @@ export default class LatexViewerPlugin extends Plugin {
         }) );
 
         workspace.onLayoutReady(async () => {
-            // Show leaf
+            // Show leaf if not already there
+
+            const activeLeaves = workspace.getLeavesOfType(LatexView.VIEW_TYPE);
+            if(activeLeaves.length > 0) {
+                workspace.revealLeaf(activeLeaves[0]);
+                return;
+            }
+
             const leaf = workspace.getRightLeaf(false);
             await leaf.setViewState({ type: LatexView.VIEW_TYPE, active: true });
         });
