@@ -59,10 +59,12 @@ export default class LatexViewerPlugin extends Plugin {
 
             const activeLeaves = workspace.getLeavesOfType(LatexView.VIEW_TYPE);
             if(activeLeaves.length > 0) {
+                console.log("View with type found, using that");
                 workspace.revealLeaf(activeLeaves[0]);
                 return;
             }
 
+            console.log("No view of type found, creating...")
             const leaf = workspace.getRightLeaf(false);
             await leaf.setViewState({ type: LatexView.VIEW_TYPE, active: true });
         });
